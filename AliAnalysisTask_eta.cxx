@@ -465,9 +465,10 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
     Int_t MinNCells=2;
     Double_t MinLambda=0.1;
     Double_t MaxLambda=0.366;
+    Double_t MaxChi2=6.25;
     Double_t MinPi0=0.12;
     Double_t MaxPi0=0.155;
-    Double_t TOF=25e-9;
+    Double_t TOF=12.5e-9;
 //    Double_t MaxAsym=0.94;
     Bool_t IsTrackMatched;
     AliVCluster *ClustList[Nclust];
@@ -495,7 +496,8 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	if(clust && clust->IsEMCAL()) ftest->Fill(1);
         if(clust && clust->IsPHOS())  ftest->Fill(2);
 	if(clust)
-        {	    
+        {
+	    if(clust->IsPHOS() && clust->GetType()!=AliVCluster::kPHOSNeutral) continue;	//reject CPV clusters
             Double_t clustE = clust->E();
             Float_t  posx[3]; // cluster pos
             clust->GetPosition(posx);
@@ -508,24 +510,30 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 //            fHistoNCells->Fill(clust->GetNCells());
 	    ftof->Fill(clustE,clust->GetTOF());
             fClustStat->Fill(0);
-            if(clust->GetNCells()<MinNCells) continue;
+            if(clust->GetNCells()<MinNCells) continue;						//NCells cut
 //	    ClustListNCells[icl]=clust;
 	    fClustStat->Fill(1);
-            if(clust->IsEMCAL() && clustE<fMinEEMC) continue;
+            if(clust->IsEMCAL() && clustE<fMinEEMC) continue;					//MinE cut (EMCal/PHOS specific)
 	    if(clust->IsPHOS() && clustE<fMinEPHS) continue;
-	    if(clustE>fMaxE) continue;
+	    //if(clustE>fMaxE) continue;
 //	    ClustListMinE[icl]=clust;
 	    fClustStat->Fill(2);
-	    if(TMath::Abs(clust->GetTOF()) > TOF) continue;
+	    if(TMath::Abs(clust->GetTOF()) > TOF) continue;					//TOF cut
 //	    ClustListTOF[icl]=clust;
 	    fClustStat->Fill(3);
 
 	    if(clust->IsEMCAL()) {
-              fShapeParam->Fill(clust->GetM02());
-              if(clust->GetM02() < MinLambda || clust->GetM02() > MaxLambda) continue;
+//              fShapeParam->Fill(clust->GetM02());
+              if(clust->GetM02() < MinLambda || clust->GetM02() > MaxLambda) continue;		//Shower shape cut (EMCal/PHOS specific)
 //	      ClustListM02[icl]=clust;
 	    }
-//	   else ClustListM02[icl]=clust;
+
+	   if(clust->IsPHOS()) {
+              fShapeParam->Fill(clust->Chi2);
+		if(clust->Chi2() > MaxChi2) continue;
+//	        ClustListM02[icl]=clust;
+	     }
+
            fClustStat->Fill(4);
 
 
@@ -584,7 +592,8 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    else ClustListPHS[icl]=clust;
 	    fClustStat->Fill(5);
             fHistClustE2->Fill(clustE);
-            if(clust->IsEMCAL()) fShapeParam2->Fill(clust->GetM02());
+//            if(clust->IsEMCAL()) fShapeParam2->Fill(clust->GetM02());
+            if(clust->IsPHOS()) fShapeParam2->Fill(clust->Chi2);
 //            fHistoNCells2->Fill(clust->GetNCells());
 	    ftof2->Fill(clustE,clust->GetTOF());
      
@@ -609,6 +618,8 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
     if(fESD)fESD->GetVertex()->GetXYZ(vertex);
     
 /*
+//NCells cut:
+
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
 	    AliVCluster *clust1=ClustListNCells[icl];
@@ -636,6 +647,8 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 		   
                 } 
             }
+
+//MinE cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -665,6 +678,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } 
             }
 
+//TOF cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -694,6 +708,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } //close clust1
             }//close clust2
 
+//Shower shape cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -723,6 +738,8 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } //close clust1
             }//close clust2
 */
+//Track matching cut:
+
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
 	    AliVCluster *clust1=ClustList[icl];
@@ -767,6 +784,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } 
             }
 
+//Only EMCal, pi0 cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -796,6 +814,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } //close clust1
             }//close clust2
 
+//Only PHOS, pi0 cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -825,6 +844,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } //close clust1
             }//close clust2
 
+//Both, pi0 cut:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
