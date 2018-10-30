@@ -529,7 +529,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    }
 
 	   if(clust->IsPHOS()) {
-              fShapeParam->Fill(clust->Chi2);
+              fShapeParam->Fill(clust->Chi2());
 		if(clust->Chi2() > MaxChi2) continue;
 //	        ClustListM02[icl]=clust;
 	     }
@@ -593,7 +593,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    fClustStat->Fill(5);
             fHistClustE2->Fill(clustE);
 //            if(clust->IsEMCAL()) fShapeParam2->Fill(clust->GetM02());
-            if(clust->IsPHOS()) fShapeParam2->Fill(clust->Chi2);
+            if(clust->IsPHOS()) fShapeParam2->Fill(clust->Chi2());
 //            fHistoNCells2->Fill(clust->GetNCells());
 	    ftof2->Fill(clustE,clust->GetTOF());
      
