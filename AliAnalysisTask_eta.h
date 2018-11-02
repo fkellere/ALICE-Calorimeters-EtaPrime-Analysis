@@ -22,6 +22,7 @@ public:
     void SetMinEEMC(Double_t MinEemcal) { fMinEEMC = MinEemcal; };
     void SetMinEPHS(Double_t MinEphos) { fMinEPHS = MinEphos; };
     void SetMaxE(Double_t MaxEnergy) { fMaxE = MaxEnergy; };
+    void SetTrigger(TString Trigger) { fTrigger = Trigger; };
     
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
 
@@ -48,6 +49,7 @@ private:
     Double_t		fMinEEMC; 
     Double_t		fMinEPHS; 
     Double_t		fMaxE;    
+    TString		fTrigger;
     
     TList       	*fOutputList; 		    //! Output list
     TH1F        	*fNevents;		    //! no of events
@@ -89,6 +91,8 @@ private:
     TH1F        	*fHisto_M_Pi0;		    //! mass with Pi0
     TH2F        	*fHisto_M_pt_Eta;	    //! mass vs. pt without Pi0
     TH1F        	*fHisto_M_Eta;		    //! mass without Pi0
+    TH2F        	*fHisto_M_pt_All;	    //! mass vs. pt with all pairings allowed
+    TH1F        	*fHisto_M_All;		    //! mass with all pairings allowed
     TH1F 		*ftest;			    //!
 //    TH2F        	*fHistoE_NCells;	    //!
     

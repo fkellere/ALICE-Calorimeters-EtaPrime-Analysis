@@ -90,6 +90,8 @@ fHisto_M_pt_Pi0(0),
 fHisto_M_Pi0(0),
 fHisto_M_pt_Eta(0),
 fHisto_M_Eta(0),
+fHisto_M_pt_All(0),
+fHisto_M_All(0),
 //fHistoE_NCells(0),
 fClustStat(0),
 ftest(0)
@@ -148,6 +150,8 @@ fHisto_M_pt_Pi0(0),
 fHisto_M_Pi0(0),
 fHisto_M_pt_Eta(0),
 fHisto_M_Eta(0),
+fHisto_M_pt_All(0),
+fHisto_M_All(0),
 //fHistoE_NCells(0),
 fClustStat(0),
 ftest(0)
@@ -216,10 +220,10 @@ void AliAnalysisTask_eta::UserCreateOutputObjects()
     fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
     fOutputList->Add(fVtxZ);
     
-    fShapeParam = new TH1F("fShapeParam","Shape Parameters of EMCal clusters;#lambda0^{2};counts",1000, 0.0, 3.);
+    fShapeParam = new TH1F("fShapeParam","Shape Parameters of EMCal clusters;#lambda0^{2};counts",1000, 0.0, 20);
     fOutputList->Add(fShapeParam);
     
-    fShapeParam2 = new TH1F("fShapeParam2","Shape Parameters of EMCal clusters after cuts;#lambda0^{2};counts",1000, 0., 3.);
+    fShapeParam2 = new TH1F("fShapeParam2","Shape Parameters of EMCal clusters after cuts;#lambda0^{2};counts",1000, 0., 20);
     fOutputList->Add(fShapeParam2);
     
     fHistClustE = new TH1F("fHistClustE", "cluster energy distribution; Cluster E;counts", 5000, 0.0, 100.0);
@@ -325,6 +329,14 @@ void AliAnalysisTask_eta::UserCreateOutputObjects()
     fHisto_M_Pi0 = new TH1F("fHisto_M_Pi0", "Mass with Pi0;Mass [GeV/c^{2}];#", 1400, 0.0, 1.4);
     fOutputList->Add(fHisto_M_Pi0);
 
+    fHisto_M_pt_All = new TH2F("fHisto_M_pt_All", "Mass vs pT, all pairings", 1400, 0.0, 1.4, 1400, 0.0, 100.0);
+    fHisto_M_pt_All->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
+    fHisto_M_pt_All->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+    fOutputList->Add(fHisto_M_pt_All);
+    
+    fHisto_M_All = new TH1F("fHisto_M_All", "Mass with All pairings;Mass [GeV/c^{2}];#", 1400, 0.0, 1.4);
+    fOutputList->Add(fHisto_M_All);
+
     fHisto_M_pt_Eta = new TH2F("fHisto_M_pt_Eta", "Mass vs pT", 1400, 0.0, 1.4, 1400, 0.0, 100.0);
     fHisto_M_pt_Eta->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
     fHisto_M_pt_Eta->GetYaxis()->SetTitle("p_{T} [GeV/c]");
@@ -399,9 +411,10 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
     /*
     TString firedTrigger;
     
-    TString   MyTrigger1 = "CEMC7"; // CEMC7EG1-B-NOPF for 16l, CEMC7EG2-B-NOPF for 17p/q
-    TString   MyTrigger2 = "CPHI7";
-    TString   MyTrigger3 = "CINT7";
+    TString   MyTrigger1 = "CPHI7";
+    TString   MyTrigger2 = "CEMC7";
+    TString   MyTrigger3 = "CPHI7"; // CEMC7EG1-B-NOPF for 16l, CEMC7EG2-B-NOPF for 17p/q
+
     if(fESD){
         firedTrigger = fESD->GetFiredTriggerClasses();
     }
@@ -409,7 +422,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
         firedTrigger = fAOD->GetFiredTriggerClasses();
     }
     
-    if(firedTrigger.Contains(MyTrigger1)!=1 || firedTrigger.Contains(MyTrigger2)!=1 || firedTrigger.Contains(MyTrigger3)){
+    if(firedTrigger.Contains(MyTrigger1)!=1 || firedTrigger.Contains(MyTrigger2)!=1 || firedTrigger.Contains(MyTrigger3)!=1){
         return;
     }*/
     
@@ -760,6 +773,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    {
 		    AliVCluster *clust2=ClustList[jcl];
 	    	    if (clust2==0) continue;
+		    if((fTrigger=="CPHI7" && clust1->IsEMCAL() && clust2->IsEMCAL()) || (fTrigger=="CEMC7" && clust1->IsPHOS() && clust2->IsPHOS())) continue;
 		    E2=clust2->E();
 		    //EAsym = TMath::Abs((E1-E2)/(E1+E2));
 	            //fHistEAsym->Fill(EAsym);
@@ -801,6 +815,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    {
 		    AliVCluster *clust2=ClustListEMC[jcl];
 	    	    if (clust2==0) continue;
+		    //if((fTrigger=="CPHI7" && clust1->IsEMCAL() && clust2->IsEMCAL()) || (fTrigger=="CEMC7" && clust1->IsPHOS() && clust2->IsPHOS())) continue;
 	    	    E2=clust2->E();
                     clust2->GetMomentum(Photon2,vertex);
                     Photon2.SetPx(Photon2.Px());
@@ -831,6 +846,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
 	    {
 		    AliVCluster *clust2=ClustListPHS[jcl];
 	    	    if (clust2==0) continue;
+		    //if((fTrigger=="CPHI7" && clust1->IsEMCAL() && clust2->IsEMCAL()) || (fTrigger=="CEMC7" && clust1->IsPHOS() && clust2->IsPHOS())) continue;
 	    	    E2=clust2->E();
                     clust2->GetMomentum(Photon2,vertex);
                     Photon2.SetPx(Photon2.Px());
@@ -844,7 +860,7 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
                 } //close clust1
             }//close clust2
 
-//Both, pi0 cut:
+//Both, pi0 cut, all pairings:
 
     for(Int_t icl=0; icl<Nclust-1; icl++)
     {
@@ -860,7 +876,42 @@ void AliAnalysisTask_eta::UserExec(Option_t *)
             for (Int_t jcl = icl+1; jcl < Nclust; jcl++) 
 	    {
 		    AliVCluster *clust2=ClustList[jcl];
-	    	    if (clust2==0) continue;
+	    	    if(clust2==0) continue;
+		    E2=clust2->E();
+                    clust2->GetMomentum(Photon2,vertex);
+                    Photon2.SetPx(Photon2.Px());
+                    Photon2.SetPy(Photon2.Py());
+                    Photon2.SetPz(Photon2.Pz());
+
+                    Parent =  TLorentzVector(Photon1.Px(),Photon1.Py(),Photon1.Pz(),E1) + TLorentzVector(Photon2.Px(),Photon2.Py(),Photon2.Pz(),E2);
+                    fHisto_M_pt_All->Fill(Parent.M(),Parent.Pt());
+                    fHisto_M_All->Fill(Parent.M());
+		    //EAsym = TMath::Abs((E1-E2)/(E1+E2));
+          	    //if(EAsym > MaxAsym) continue;
+                    //fHisto_M_pt_Asym->Fill(Parent.M(),Parent.Pt());
+                    //fHisto_M_Asym->Fill(Parent.M());
+		   
+                } 
+            }
+
+//Both, pi0 cut, only relevant pairings:
+
+    for(Int_t icl=0; icl<Nclust-1; icl++)
+    {
+	    AliVCluster *clust1=ClustList[icl];
+	    if (clust1==0) continue;
+	    E1=clust1->E();
+            clust1->GetMomentum(Photon1,vertex);
+            Photon1.SetPx(Photon1.Px());
+            Photon1.SetPy(Photon1.Py());
+            Photon1.SetPz(Photon1.Pz());
+
+            //Cluster loop2, for invariant mass.
+            for (Int_t jcl = icl+1; jcl < Nclust; jcl++) 
+	    {
+		    AliVCluster *clust2=ClustList[jcl];
+	    	    if(clust2==0) continue;
+		    if((fTrigger=="CPHI7" && clust1->IsEMCAL() && clust2->IsEMCAL()) || (fTrigger=="CEMC7" && clust1->IsPHOS() && clust2->IsPHOS())) continue;
 		    E2=clust2->E();
                     clust2->GetMomentum(Photon2,vertex);
                     Photon2.SetPx(Photon2.Px());
